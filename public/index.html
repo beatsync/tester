@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form.chat { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form.chat input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form.chat button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form class="chat" action="">
+      <input id="m1" autocomplete="off" /><button>Send</button>
+    </form>
+    <form action="http://beatsyncer.appspot.com/search" method="POST" class="search-soundcloud">
+      <input id="m2" autocomplete="off" /><button>Send</button>
+    </form>
+    <form action="" class="search-youtube">
+      <input id="m3" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      function simulateClick(x, y) {
+          jQuery(document.elementFromPoint(x, y)).click();
+      }
+      $('.chat').submit(function(){
+        socket.emit('chat message', $('#m1').val());
+        console.log('Chat: ' + $('#m1').val());
+        $('#m1').val('');
+        return false;
+      });
+      $('.search-soundcloud').submit(function(){
+        socket.emit('search soundcloud', $('#m2').val());
+        console.log('Search: ' + $('#m2').val());
+        return false;
+      });
+      socket.on('search soundcloud results', function(msg){
+        console.log(msg);
+      });
+      $('.search-youtube').submit(function(){
+        socket.emit('search youtube', $('#m3').val());
+        console.log('Search: ' + $('#m3').val());
+        return false;
+      });
+      socket.on('search youtube results', function(msg){
+        console.log(msg);
+      });
+      socket.on('chat message', function(msg){
+        $('#messages').append($('<li>').text(msg));
+      });
+      socket.on('play', function(msg){
+        console.log('play');
+        SCM.play();
+      });
+      socket.on('pause', function(msg){
+        console.log('pause');
+        SCM.pause();
+      });
+      socket.on('song', function(msg){
+        console.log('song ' + msg.split('*')[1] +  ' ' +  + msg.split('*')[2]);
+        SCM.play({title:msg.split('*')[1],url:msg.split('*')[2]})
+        setTimeout(function() {
+          SCM.pause();
+        }, 50);
+        setTimeout(function() {
+          SCM.play();
+        }, 2000);
+      });
+      socket.on('ping', function(t){
+        console.log('sending ping');
+        socket.emit('chat message', ('/pingback*' + t));
+      });
+      socket.on('latency', function(t){
+        console.table(t);
+        console.log('latency: ' + t + 'ms');
+        $('#messages').append($('<li>').text('latency: ' + t + 'ms'));
+      });
+      socket.on('sync position', function(msg){
+        console.log('position: ' + msg);
+        $('iframe').contents().find("#seekerSliderBase").attr("style");
+      });
+
+    </script>
+    <!-- SCM Music Player http://scmplayer.net -->
+    <script type="text/javascript" src="/scm/script.js" 
+    data-config="{'skin':'skins/simpleBlack/skin.css','volume':50,'autoplay':true,'shuffle':false,'repeat':1,'placement':'top','showplaylist':true,'playlist':[]}" ></script>
+    <!-- SCM Music Player script end -->
+  </body>
+</html>
+
