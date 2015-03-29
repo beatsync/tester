@@ -28,6 +28,10 @@ io.on('connection', function(socket){
       console.log('ping at ' + t);
       socket.emit('ping', t);
     }
+    else if (msg == '/reset') {
+      console.log('reset ');
+      socket.emit('reset', 'reset');
+    }
     else if (msg.indexOf('/pingback') > -1) {
       var d = new Date();
       var t = d.getTime();
@@ -50,6 +54,7 @@ io.on('connection', function(socket){
     }
   });
   socket.on('search soundcloud', function(msg){
+    console.log("soundcloud search 1: " + msg)
     request({
       uri: "http://beatsyncer.appspot.com/search",
       method: "POST",
@@ -58,7 +63,7 @@ io.on('connection', function(socket){
       }
     }, function(error, response, body) {
       console.log("soundcloud search: " + msg)
-      socket.emit('search soundcloud results', JSON.stringify(body));
+      socket.emit('search soundcloud results', body);
     });
   });
   socket.on('search youtube', function(msg){
