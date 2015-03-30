@@ -12,6 +12,23 @@ app.get('/', function(req, res){
   res.sendfile(__dirname + '/public/index.html');
 });
 
+var offset = 0;
+function calcOffset() {
+    var xmlhttp = new XMLHttpRequest(); // ActiveXObject("Msxml2.XMLHTTP");
+    xmlhttp.open("GET", "http://stackoverflow.com/", false);
+    xmlhttp.send();
+    var dateStr = xmlhttp.getResponseHeader('Date');
+    var serverTimeMillisGMT = Date.parse(new Date(Date.parse(dateStr)).toUTCString());
+    var localMillisUTC = Date.parse(new Date().toUTCString());
+    offset = serverTimeMillisGMT - localMillisUTC;
+}
+ 
+function getServerTime() {
+    var date = new Date();
+    date.setTime(date.getTime() + offset);
+    return date;
+}
+
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('disconnect', function(){
